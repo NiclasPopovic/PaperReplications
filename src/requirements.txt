@@ -1,0 +1,7 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: osx-arm64
+# created-by: conda 24.9.2
+ca-certificates=2024.11.26=hca03da5_0
+llvm-openmp=14.0.6=hc6e5704_0
+numpy-base=1.26.4=py312he047099_0
