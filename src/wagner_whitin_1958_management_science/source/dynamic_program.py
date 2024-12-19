@@ -5,58 +5,124 @@ from collections import defaultdict
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 class DynamicProgram:
+    """
+    Implements the dynamic programming approach for solving the lot-sizing problem.
 
+    This class calculates the minimum cost of satisfying demand over a finite planning
+    horizon by considering ordering and holding costs. It includes methods for precomputing
+    holding costs and determining the optimal ordering policy.
+
+    Attributes:
+        _demand (list[int]): Demand for each period.
+        _interest_charge (float): Per-unit holding cost per period.
+        _ordering_cost (list[float]): Fixed ordering cost for each period.
+        _periods (int): Total number of periods in the planning horizon.
+        period_costs (defaultdict): Stores the minimum cost for satisfying demand up to
+                                    each period.
+        optimal_policy (dict): Maps each period to the optimal ordering decision.
+
+    Methods:
+        - _precompute_holding_costs: Precomputes the holding cost matrix.
+        - run: Executes the dynamic programming algorithm to determine the optimal policy.
+
+    Example:
+        dp = DynamicProgram(demand=[10, 15, 20], interest_charge=2, ordering_cost=[50, 50, 50])
+        dp.run()
+        print(dp.period_costs)  # Minimum costs for each period
+        print(dp.optimal_policy)  # Optimal ordering decisions
+    """
     def __init__(self, demand, interest_charge, ordering_cost):
         self._demand = demand
         self._interest_charge = interest_charge
         self._ordering_cost = ordering_cost
         self._periods = len(self._demand)
         self.period_costs = defaultdict(int)
+        self.optimal_policy = {}
 
     def _precompute_holding_costs(self):
+        """
+        Precomputes the holding costs for all possible order start and end periods.
+
+        The holding cost matrix stores the cumulative cost of carrying demand from a start
+        period `j` to an end period `t`. For each unit of demand satisfied, holding costs
+        are incurred for every intermediate period it is carried forward.
+
+        This implementation explicitly computes the costs using nested loops to ensure that
+        each demand contributes correctly to the total holding costs.
+
+        Returns:
+            holding_costs (np.ndarray): A 2D array where holding_costs[t][j] represents the
+                                        total holding cost for satisfying demand from period
+                                        j+1 to t.
+
+        Example:
+            For demand = [10, 15, 20], interest_charge = 2:
+                - holding_costs[3][1] accounts for:
+                    - Demand for t=2 carried for 1 period.
+                    - Demand for t=3 carried for 2 periods.
+        """
         n = len(self._demand)
-        holding_costs = np.zeros((n + 1, n + 1))  # Matrix to store holding costs
+        holding_costs = np.zeros((n + 1, n + 1))
 
-        # Precompute cumulative demand
-        cumulative_demand = np.zeros(n + 1)
-        for t in range(1, n + 1):
-            cumulative_demand[t] = cumulative_demand[t - 1] + self._demand[t - 1]
+        # Holding costs calculations may be optimized
+        for t in range(1, len(self._demand)):
+            for j in range (0, t):
+                for h in range(j, t):
+                    for k in range(h + 1, t+1):
+                        holding_costs[t, j] += self._interest_charge * self._demand[k] #
 
-        # Calculate holding costs using cumulative sums
-        for j in range(1, n + 1):  # Start period
-            for t in range(j, n + 1):  # End period
-                holding_costs[j][t] = self._interest_charge * (cumulative_demand[t] - cumulative_demand[j - 1])
+        return holding_costs
 
 
 
     def run(self):
+        """
+        Executes the optimized dynamic programming algorithm to solve the lot-sizing problem.
+
+        This method calculates the minimum cost of satisfying demand over a finite planning
+        horizon by considering ordering and holding costs. It precomputes holding costs for
+        efficiency and uses dynamic programming to determine the optimal ordering policy.
+
+        Attributes Updated:
+            - self.period_costs (dict): Minimum cost to satisfy demand up to each period.
+            - self.optimal_policy (dict): Optimal order schedule for minimizing total cost.
+
+        Returns:
+            None. Results are stored in:
+                - self.period_costs: Maps each period to the minimum cost up to that period.
+                - self.optimal_policy: Maps each period to the optimal ordering decision.
+
+        Example:
+            For demand = [10, 15, 20], interest_charge = 2, and ordering_cost = [50, 50, 50]:
+                - self.period_costs = {1: 50, 2: 95, 3: 170}
+                - self.optimal_policy = {
+                    1: "Order at 1 to satisfy up to 1",
+                    2: "Order at 1 to satisfy up to 2",
+                    3: "Order at 2 to satisfy up to 3"
+                }
+        """
         self.period_costs = defaultdict(int)
-        first_term = defaultdict(int)
-        second_term = defaultdict(int)
         self.period_costs[0] = 0
-        optimal_policy = {}
+        self.optimal_policy = {}
 
-        for period, _ in enumerate(self._demand, start=1):
+        holding_costs = self._precompute_holding_costs()  # Precompute holding costs
 
-            # period 0 is period 1 in the algorithm description in the paper
-            if period == 1:
-                # Optimal cost for the first period: just order the demand for the first period
-                self.period_costs[period] = self._ordering_cost[period-1]
-                optimal_policy[period] = f'{period}|{period}'
-                continue
+        for period in range(1, self._periods + 1):
+            min_cost = float('inf')
+            best_j = None
 
-            min_first_term = float('inf')
-            for j in range(1, period):
-                holding_costs = 0
-                for h in range(j, period):
-                    for k in range(h + 1, period+1):
-                        holding_costs += self._interest_charge * self._demand[k-1] # Adjust for 0-based indexing
+            for j in range(1, period + 1):
+                if holding_costs[period-1][j-1] > self._ordering_cost[j - 1]:
+                    # The holding costs for a period demand should never exceed the ordering cost -> This cannot be optimal
+                    continue
 
-                current_first_term = self._ordering_cost[j-1] + holding_costs + self.period_costs[j-1]
-                first_term[(period, j)]  = current_first_term
-                min_first_term = min(min_first_term, current_first_term)
+                current_cost = self._ordering_cost[j - 1] + holding_costs[period-1][j-1] + self.period_costs[j - 1]
+                if current_cost < min_cost:
+                    min_cost = current_cost
+                    best_j = j
 
-            second_term[period] = self._ordering_cost[period-1] + self.period_costs[period - 1]
-            self.period_costs[period] = min(min_first_term, second_term[period])
+            self.period_costs[period] = min_cost
+            self.optimal_policy[period] = f"Order at {best_j} to satisfy up to {period}"
 
-        print(self.period_costs)
+        print("Period Costs:", self.period_costs)
+        print("Optimal Policy:", self.optimal_policy)

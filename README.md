@@ -92,7 +92,7 @@ For any issues or questions, feel free to open an issue in the repository.
 ### **References**
 
 1. Wagner, H. M., & Whitin, T. M. (1958). "Dynamic Version of the Economic Lot Size Model". *Management Science*, 5(1), 89-96. [https://doi.org/10.1287/mnsc.5.1.89](https://doi.org/10.1287/mnsc.5.1.89)
-2. [Add other references here as you replicate more papers.]
+
 
 ---
 
