@@ -112,10 +112,6 @@ class DynamicProgram:
             best_j = None
 
             for j in range(1, period + 1):
-                if holding_costs[period-1][j-1] > self._ordering_cost[j - 1]:
-                    # The holding costs for a period demand should never exceed the ordering cost -> This cannot be optimal
-                    continue
-
                 current_cost = self._ordering_cost[j - 1] + holding_costs[period-1][j-1] + self.period_costs[j - 1]
                 if current_cost < min_cost:
                     min_cost = current_cost
