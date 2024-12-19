@@ -85,40 +85,27 @@ class DynamicProgram:
 
         Attributes Updated:
             - self.period_costs (dict): Minimum cost to satisfy demand up to each period.
-            - self.optimal_policy (dict): Optimal order schedule for minimizing total cost.
 
         Returns:
             None. Results are stored in:
                 - self.period_costs: Maps each period to the minimum cost up to that period.
-                - self.optimal_policy: Maps each period to the optimal ordering decision.
 
         Example:
             For demand = [10, 15, 20], interest_charge = 2, and ordering_cost = [50, 50, 50]:
                 - self.period_costs = {1: 50, 2: 95, 3: 170}
-                - self.optimal_policy = {
-                    1: "Order at 1 to satisfy up to 1",
-                    2: "Order at 1 to satisfy up to 2",
-                    3: "Order at 2 to satisfy up to 3"
-                }
         """
         self.period_costs = defaultdict(int)
         self.period_costs[0] = 0
-        self.optimal_policy = {}
 
         holding_costs = self._precompute_holding_costs()  # Precompute holding costs
 
         for period in range(1, self._periods + 1):
             min_cost = float('inf')
-            best_j = None
 
             for j in range(1, period + 1):
                 current_cost = self._ordering_cost[j - 1] + holding_costs[period-1][j-1] + self.period_costs[j - 1]
-                if current_cost < min_cost:
-                    min_cost = current_cost
-                    best_j = j
+                min_cost = min(min_cost, current_cost)
 
             self.period_costs[period] = min_cost
-            self.optimal_policy[period] = f"Order at {best_j} to satisfy up to {period}"
 
         print("Period Costs:", self.period_costs)
-        print("Optimal Policy:", self.optimal_policy)
