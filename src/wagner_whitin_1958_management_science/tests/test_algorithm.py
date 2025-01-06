@@ -1,5 +1,8 @@
 from unittest import TestCase
-from src.wagner_whitin_1958_management_science.source.dynamic_program import DynamicProgram
+from src.wagner_whitin_1958_management_science.source.dynamic_program import (
+    DynamicProgram,
+)
+
 
 class TestAlgorithm(TestCase):
     """
@@ -17,6 +20,7 @@ class TestAlgorithm(TestCase):
         - setUp: Initializes the `DynamicProgram` instance before each test.
         - testAlgorithm: Verifies that the computed minimum cost matches the expected value.
     """
+
     def setUp(self):
         """
         Initializes the `DynamicProgram` instance for testing.
@@ -29,12 +33,11 @@ class TestAlgorithm(TestCase):
             - interest_charge: Per-unit holding cost.
             - ordering_cost: A list of fixed ordering costs for 12 periods.
         """
-        self.DPAlgorithm = DynamicProgram(demand=[69, 29, 36, 61, 61, 26,
-                                                  34, 67,  45, 67, 79, 56],
-                                          interest_charge=1,
-                                          ordering_cost=[85, 102, 102, 101, 98, 114,
-                                                  105, 86, 119, 110, 98, 114])
-
+        self.DPAlgorithm = DynamicProgram(
+            demand=[69, 29, 36, 61, 61, 26, 34, 67, 45, 67, 79, 56],
+            interest_charge=1,
+            ordering_cost=[85, 102, 102, 101, 98, 114, 105, 86, 119, 110, 98, 114],
+        )
 
     def testAlgorithm(self):
         """
@@ -52,5 +55,3 @@ class TestAlgorithm(TestCase):
         """
         self.DPAlgorithm.run()
         self.assertEqual(864, self.DPAlgorithm.period_costs[12])
-
-

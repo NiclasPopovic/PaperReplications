@@ -2,11 +2,14 @@ import sys
 import os
 import numpy as np
 from collections import defaultdict
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 class DynamicProgram:
     """
-    Implements the dynamic programming approach for solving the lot-sizing problem.
+    Implements the dynamic programming approach for solving the standard lot-sizing problem proposed by
+    Wagner & Whitin (1958)
 
     This class calculates the minimum cost of satisfying demand over a finite planning
     horizon by considering ordering and holding costs. It includes methods for precomputing
@@ -31,6 +34,7 @@ class DynamicProgram:
         print(dp.period_costs)  # Minimum costs for each period
         print(dp.optimal_policy)  # Optimal ordering decisions
     """
+
     def __init__(self, demand, interest_charge, ordering_cost):
         self._demand = demand
         self._interest_charge = interest_charge
@@ -66,14 +70,12 @@ class DynamicProgram:
 
         # Holding costs calculations may be optimized
         for t in range(1, len(self._demand)):
-            for j in range (0, t):
+            for j in range(0, t):
                 for h in range(j, t):
-                    for k in range(h + 1, t+1):
-                        holding_costs[t, j] += self._interest_charge * self._demand[k] #
+                    for k in range(h + 1, t + 1):
+                        holding_costs[t, j] += self._interest_charge * self._demand[k]
 
         return holding_costs
-
-
 
     def run(self):
         """
@@ -100,10 +102,14 @@ class DynamicProgram:
         holding_costs = self._precompute_holding_costs()  # Precompute holding costs
 
         for period in range(1, self._periods + 1):
-            min_cost = float('inf')
+            min_cost = float("inf")
 
             for j in range(1, period + 1):
-                current_cost = self._ordering_cost[j - 1] + holding_costs[period-1][j-1] + self.period_costs[j - 1]
+                current_cost = (
+                    self._ordering_cost[j - 1]
+                    + holding_costs[period - 1][j - 1]
+                    + self.period_costs[j - 1]
+                )
                 min_cost = min(min_cost, current_cost)
 
             self.period_costs[period] = min_cost
