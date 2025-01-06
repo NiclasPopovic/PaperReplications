@@ -15,4 +15,7 @@ black $TARGETS
 echo "Running ruff for linting..."
 ruff check $TARGETS
 
+echo "Generating requirements.txt from installed packages..."
+pip list --format=freeze > requirements.txt
+
 echo "Pipeline script was executed successfully"
