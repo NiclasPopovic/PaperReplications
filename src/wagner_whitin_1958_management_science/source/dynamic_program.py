@@ -65,7 +65,7 @@ class DynamicProgram:
                     - Demand for t=2 carried for 1 period.
                     - Demand for t=3 carried for 2 periods.
         """
-        n = len(self._demand)
+        n = self._periods
         holding_costs = np.zeros((n + 1, n + 1))
 
         # Holding costs calculations may be optimized
