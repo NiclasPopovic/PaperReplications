@@ -1,7 +1,5 @@
 from unittest import TestCase
-from src.wagner_whitin_1958_management_science.source.dynamic_program import (
-    DynamicProgram,
-)
+from src.wagner_whitin_1958_management_science.source.dynamic_program import DynamicProgram
 
 
 class TestAlgorithm(TestCase):

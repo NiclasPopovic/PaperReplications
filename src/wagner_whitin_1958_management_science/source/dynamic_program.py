@@ -36,9 +36,9 @@ class DynamicProgram:
     """
 
     def __init__(self, demand, interest_charge, ordering_cost):
-        self._demand = demand
+        self._demand = np.array(demand)
         self._interest_charge = interest_charge
-        self._ordering_cost = ordering_cost
+        self._ordering_cost = np.array(ordering_cost)
         self._periods = len(self._demand)
         self.period_costs = defaultdict(int)
         self.optimal_policy = {}
@@ -67,6 +67,7 @@ class DynamicProgram:
         """
         n = self._periods
         holding_costs = np.zeros((n + 1, n + 1))
+
 
         # Holding costs calculations may be optimized
         for t in range(1, len(self._demand)):
