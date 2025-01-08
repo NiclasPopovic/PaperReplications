@@ -46,7 +46,14 @@ class DynamicProgram:
         print(production_periods)  # Optimal production policy
     """
 
-    def __init__(self, demand, unit_holding_cost, unit_ordering_cost, fixed_ordering_cost, unit_revenue):
+    def __init__(
+        self,
+        demand,
+        unit_holding_cost,
+        unit_ordering_cost,
+        fixed_ordering_cost,
+        unit_revenue,
+    ):
         self._demand = np.array(demand)
         self._periods = len(self._demand)
         self._marginal_costs = np.zeros((self._periods, self._periods))
@@ -54,7 +61,9 @@ class DynamicProgram:
         self._unit_ordering_cost = np.array(unit_ordering_cost)
         self._fixed_ordering_cost = np.array(fixed_ordering_cost)
         self._unit_revenue = np.array(unit_revenue)
-        self._cumulative_holding_costs = np.zeros(self._periods + 1) # +1 to include the index at position -1
+        self._cumulative_holding_costs = np.zeros(
+            self._periods + 1
+        )  # +1 to include the index at position -1
 
         self.period_costs = defaultdict(int)
         self.optimal_policy = {}
@@ -79,18 +88,24 @@ class DynamicProgram:
         """
         self._cumulative_holding_costs[0] = 0
 
-        self._cumulative_holding_costs = list(accumulate(
-            self._unit_holding_cost,
-            lambda total, current: total + current,
-            initial=0))
+        self._cumulative_holding_costs = list(
+            accumulate(
+                self._unit_holding_cost,
+                lambda total, current: total + current,
+                initial=0,
+            )
+        )
 
-        n = len(self._demand)
-        holding_costs = np.zeros((n + 1, n + 1))
         for j in range(1, self._periods):
             for t in range(j, self._periods):
-                self._marginal_costs[j-1,t]=np.min([self._unit_revenue[t],
-                                            self._unit_ordering_cost[j-1] + self._cumulative_holding_costs[t] - self._cumulative_holding_costs[j-1]
-                                     ])
+                self._marginal_costs[j - 1, t] = np.min(
+                    [
+                        self._unit_revenue[t],
+                        self._unit_ordering_cost[j - 1]
+                        + self._cumulative_holding_costs[t]
+                        - self._cumulative_holding_costs[j - 1],
+                    ]
+                )
 
     def run(self):
         """
@@ -120,23 +135,40 @@ class DynamicProgram:
         # Step 1: Compute the total period production costs for the case when nothing is produced and each demand unit is lost
         for t in range(0, self._periods):
             if t == 0:
-                self._period_production_costs[(0, t+1)] = self._unit_revenue[t] * self._demand[t]
+                self._period_production_costs[(0, t + 1)] = (
+                    self._unit_revenue[t] * self._demand[t]
+                )
             else:
-                self._period_production_costs[(0, t+1)] = self._period_production_costs[(0, t)] + self._unit_revenue[t] * self._demand[t]
+                self._period_production_costs[(0, t + 1)] = (
+                    self._period_production_costs[(0, t)]
+                    + self._unit_revenue[t] * self._demand[t]
+                )
 
         # Step 2: The dynamic program where the total cost C(t9 and total production costs C_j(t) are calculated
-        for t in range(1, self._periods+1):
+        for t in range(1, self._periods + 1):
             if t == 1:
-                self._period_production_costs[(t, t)] = self._fixed_ordering_cost[t-1] + self._unit_ordering_cost[t-1] * self._demand[t-1]
+                self._period_production_costs[(t, t)] = (
+                    self._fixed_ordering_cost[t - 1]
+                    + self._unit_ordering_cost[t - 1] * self._demand[t - 1]
+                )
             else:
-                self._period_production_costs[(t, t)] = self.period_costs[t-1] + self._fixed_ordering_cost[t-1] + self._unit_ordering_cost[t-1] * self._demand[t-1]
+                self._period_production_costs[(t, t)] = (
+                    self.period_costs[t - 1]
+                    + self._fixed_ordering_cost[t - 1]
+                    + self._unit_ordering_cost[t - 1] * self._demand[t - 1]
+                )
 
             for j in range(1, t):
-                self._period_production_costs[(j, t)] = self._period_production_costs[(j, t-1)] + self._marginal_costs[j-1, t-1] * self._demand[t-1]
+                self._period_production_costs[(j, t)] = (
+                    self._period_production_costs[(j, t - 1)]
+                    + self._marginal_costs[j - 1, t - 1] * self._demand[t - 1]
+                )
 
-            list_of_potential_solutions = [self._period_production_costs[j, t] for j in range (0, t+1)]
+            list_of_potential_solutions = [
+                self._period_production_costs[j, t] for j in range(0, t + 1)
+            ]
             self.period_costs[t] = np.min(list_of_potential_solutions)
-            self.last_production_period[t-1] = np.argmin(list_of_potential_solutions)
+            self.last_production_period[t - 1] = np.argmin(list_of_potential_solutions)
 
         print(f"Period Costs: {self.period_costs}")
         print(f"Production periods: {self.last_production_period}")

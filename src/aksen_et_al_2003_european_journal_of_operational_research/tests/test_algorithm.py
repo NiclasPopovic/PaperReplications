@@ -39,7 +39,7 @@ class TestAlgorithm(TestCase):
             unit_holding_cost=[3, 3, 3, 3],
             unit_ordering_cost=[10, 10, 10, 10],
             fixed_ordering_cost=[25000, 25000, 25000, 25000],
-            unit_revenue=[15, 21, 12, 18]
+            unit_revenue=[15, 21, 12, 18],
         )
 
     def test_holding_costs(self):
@@ -50,9 +50,8 @@ class TestAlgorithm(TestCase):
         that the computed marginal costs between specific periods match the expected values.
         """
         self.DPAlgorithm._precompute_holding_and_marginal_costs()
-        assert self.DPAlgorithm._marginal_costs[1,3] == 16
-        assert self.DPAlgorithm._marginal_costs[2,3] == 13
-
+        assert self.DPAlgorithm._marginal_costs[1, 3] == 16
+        assert self.DPAlgorithm._marginal_costs[2, 3] == 13
 
     def test_algorithm(self):
         """
@@ -63,6 +62,10 @@ class TestAlgorithm(TestCase):
         """
         total_costs, production_periods = self.DPAlgorithm.run()
         expected_total_costs = np.array([0, 45000.0, 187500.0, 211500.0, 275500.0])
-        assert np.array_equal(total_costs, expected_total_costs), f"Expected {expected_total_costs}, but got {total_costs}"
+        assert np.array_equal(
+            total_costs, expected_total_costs
+        ), f"Expected {expected_total_costs}, but got {total_costs}"
         expected_production_periods = [0, 2, 2, 2]
-        assert np.array_equal(expected_production_periods, production_periods), f"Expected{expected_production_periods}, but got {production_periods}"
+        assert np.array_equal(
+            expected_production_periods, production_periods
+        ), f"Expected{expected_production_periods}, but got {production_periods}"

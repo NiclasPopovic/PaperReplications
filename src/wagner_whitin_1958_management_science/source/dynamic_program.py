@@ -68,7 +68,6 @@ class DynamicProgram:
         n = self._periods
         holding_costs = np.zeros((n + 1, n + 1))
 
-
         # Holding costs calculations may be optimized
         for t in range(1, len(self._demand)):
             for j in range(0, t):
