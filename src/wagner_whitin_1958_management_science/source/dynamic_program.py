@@ -99,7 +99,7 @@ class DynamicProgram:
         self.period_costs = defaultdict(int)
         self.period_costs[0] = 0
 
-        holding_costs = self._precompute_holding_costs()  # Precompute holding costs
+        holding_costs = self._precompute_holding_costs()  
 
         for period in range(1, self._periods + 1):
             min_cost = float("inf")
